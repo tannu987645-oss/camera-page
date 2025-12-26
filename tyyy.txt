@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Take a Photo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    video, canvas {
+      width: 100%;
+      max-width: 300px;
+      border-radius: 10px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      background: #7b61ff;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h3>Take a Photo</h3>
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <br>
+  <button id="captureBtn">Capture Photo</button>
+</div>
+
+<script>
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const captureBtn = document.getElementById("captureBtn");
+
+  // Ask for camera permission
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      alert("Camera access denied.");
+    });
+
+  captureBtn.addEventListener("click", () => {
+    const context = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0);
+
+    canvas.toBlob(blob => {
+      const formData = new FormData();
+      formData.append("photo", blob, "photo.png");
+
+      // SEND TO SERVER (replace URL)
+      fetch("https://your-server.com/upload", {
+        method: "POST",
+        body: formData
+      })
+      .then(() => alert("Photo sent successfully"))
+      .catch(() => alert("Upload failed"));
+    });
+  });
+</script>
+
+</body>
+</html>
